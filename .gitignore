@@ -1,0 +1,46 @@
+# Executables (no exe in root — use installer)
+*.exe
+
+# Archive builds
+versions/
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# Runtime artifacts
+config.json
+debug.log
+debug.log.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# QA reports
+qa_report_*.html
+qa_tool.py
+
+# Installer output
+AutoSwitcher_Setup_*.exe
+
+# Superpowers / gstack session data
+.superpowers/
+.gstack/
+.claude/
