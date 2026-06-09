@@ -1,0 +1,16 @@
+# Runtime dependencies.
+#
+# NOTE on pymorphy2: it declares a dependency on `docopt`, whose sdist does
+# not build under modern setuptools. Install in two steps:
+#   pip install -r requirements.txt
+#   pip install --no-deps pymorphy2==0.9.1
+# (docopt-ng below provides the `docopt` module pymorphy2 imports.)
+
+pynput>=1.8          # passes the `injected` flag the pipeline relies on
+docopt-ng
+dawg-python>=0.7.1
+pymorphy2-dicts-uk
+symspellpy>=6.7
+customtkinter
+pystray
+Pillow

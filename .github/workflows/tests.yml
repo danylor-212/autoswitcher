@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install docopt-ng dawg-python pymorphy2-dicts-uk symspellpy "pynput>=1.8" pytest
+          pip install --no-deps pymorphy2==0.9.1
+      - name: Run test suite (incl. detection-quality benchmark)
+        env:
+          PYNPUT_BACKEND_KEYBOARD: dummy
+          PYNPUT_BACKEND_MOUSE: dummy
+        run: python -m pytest layout_switcher/tests/ -q

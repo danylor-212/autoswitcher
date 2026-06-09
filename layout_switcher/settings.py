@@ -83,7 +83,8 @@ class SettingsWindow:
         # Master toggle
         self.var_enabled = ctk.BooleanVar()
         self._switch(parent, "Enable Auto-Switching", self.var_enabled,
-                     self._on_toggle, pady=(0, 12))
+                     lambda: self._on_toggle('enabled', self.var_enabled),
+                     pady=(0, 12))
 
         self._separator(parent)
 
@@ -91,10 +92,12 @@ class SettingsWindow:
         self._label(parent, "Switching direction", font=_FONT_HEAD)
         self.var_en_uk = ctk.BooleanVar()
         self._switch(parent, "English  \u2192  Ukrainian", self.var_en_uk,
-                     self._on_toggle, indent=True)
+                     lambda: self._on_toggle('switch_en_to_uk', self.var_en_uk),
+                     indent=True)
         self.var_uk_en = ctk.BooleanVar()
         self._switch(parent, "Ukrainian  \u2192  English", self.var_uk_en,
-                     self._on_toggle, indent=True, pady=(0, 12))
+                     lambda: self._on_toggle('switch_uk_to_en', self.var_uk_en),
+                     indent=True, pady=(0, 12))
 
         self._separator(parent)
 
@@ -102,17 +105,21 @@ class SettingsWindow:
         self._label(parent, "T9 Autocorrect", font=_FONT_HEAD)
         self.var_t9_en = ctk.BooleanVar()
         self._switch(parent, "English T9", self.var_t9_en,
-                     self._on_toggle, indent=True)
+                     lambda: self._on_toggle('t9_eng', self.var_t9_en),
+                     indent=True)
         self.var_t9_uk = ctk.BooleanVar()
         self._switch(parent, "Ukrainian T9", self.var_t9_uk,
-                     self._on_toggle, indent=True, pady=(0, 12))
+                     lambda: self._on_toggle('t9_ukr', self.var_t9_uk),
+                     indent=True, pady=(0, 12))
 
         self._separator(parent)
 
         # Notifications
         self.var_notifications = ctk.BooleanVar()
         self._switch(parent, "Tray notifications", self.var_notifications,
-                     self._on_toggle, pady=(0, 12))
+                     lambda: self._on_toggle('notifications_enabled',
+                                             self.var_notifications),
+                     pady=(0, 12))
 
         self._separator(parent)
 
@@ -379,13 +386,10 @@ class SettingsWindow:
     # ══════════════════════════════════════════════════════════════════════
     # Event handlers
     # ══════════════════════════════════════════════════════════════════════
-    def _on_toggle(self):
-        self.core.enabled               = self.var_enabled.get()
-        self.core.switch_en_to_uk       = self.var_en_uk.get()
-        self.core.switch_uk_to_en       = self.var_uk_en.get()
-        self.core.t9_eng                = self.var_t9_en.get()
-        self.core.t9_ukr                = self.var_t9_uk.get()
-        self.core.notifications_enabled = self.var_notifications.get()
+    def _on_toggle(self, field, var):
+        # Write ONLY the toggled field: writing all of them here used to
+        # clobber changes made via the tray menu while this window was open.
+        setattr(self.core, field, var.get())
         self.core.save_config()
         self.status_general.configure(text="Settings saved.")
 
@@ -492,8 +496,9 @@ class SettingsWindow:
         word = self.entry_word.get().strip()
         if not word:
             return
-        if word.lower() not in {w.lower() for w in self.core.whitelist}:
-            self.core.whitelist.append(word)
+        before = len(self.core.whitelist)
+        self.core.whitelist_add(word)
+        if len(self.core.whitelist) > before:
             self.core.save_config()
             self.entry_word.delete(0, "end")
             self.refresh_data()
@@ -502,9 +507,7 @@ class SettingsWindow:
             self.status_whitelist.configure(text=f"'{word}' already in list")
 
     def _remove_word(self, word):
-        self.core.whitelist = [
-            w for w in self.core.whitelist if w.lower() != word.lower()
-        ]
+        self.core.whitelist_remove(word)
         self.core.save_config()
         self.refresh_data()
         self.status_whitelist.configure(text=f"Removed '{word}'")
